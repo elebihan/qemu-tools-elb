@@ -1,0 +1,62 @@
+#!/bin/sh
+#
+# qemu-brctl - control bridge for QEMU
+#
+# Copyright (c) 2014 Eric Le Bihan <eric.le.bihan.dev@free.fr>
+#
+# This project is released under the MIT/X11 license.
+#
+
+set -e
+
+IFACE=eth1
+ADDRESS=192.168.9.10
+BROADCAST=192.168.9.255
+GROUP=admin
+
+usage() {
+	cat <<EOF
+Usage: $(basename $0) [OPTIONS] <up|down>
+EOF
+}
+
+set_br_up() {
+	modprobe tun
+	openvpn --mktun --dev tap0  --group ${GROUP}
+	ifconfig tap0 0.0.0.0 promisc up
+	ifconfig ${IFACE} down
+	ifconfig ${IFACE} 0.0.0.0 promisc up
+
+	brctl addbr br0
+	brctl addif br0 ${IFACE}
+	brctl addif br0 tap0
+	brctl stp br0 off
+
+	ifconfig br0 ${ADDRESS} netmask 255.255.255.0 broadcast ${BROADCAST}
+}
+
+set_br_down() {
+	ifconfig br0 down
+	brctl delbr br0
+	openvpn --rmtun --dev tap0
+	ifconfig ${IFACE} -promisc
+	ifconfig ${IFACE} up
+}
+
+if [ $# -ne 1 ]; then
+	usage
+	exit 1
+fi
+
+case "$1" in
+	up)
+		set_br_up
+		;;
+	down)
+		set_br_down
+		;;
+	*)
+		echo "Unknown command" 2>&1
+		exit 111
+		;;
+esac

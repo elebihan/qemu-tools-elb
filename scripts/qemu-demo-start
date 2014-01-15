@@ -1,0 +1,156 @@
+#!/bin/sh
+#
+# qemu-start-demo - Starts SEMU virtual machines
+#
+# Copyright (c) 2014 Eric Le Bihan <eric.le.bihan.dev@free.fr>
+#
+# This project is released under the MIT/X11 license.
+#
+
+__VERSION__=0.1.0
+
+IMAGE_DIR="${HOME}/build"
+QEMU_SYSTEM_X86="qemu-system-i386 --enable-kvm"
+QEMU_SYSTEM_ARM="qemu-system-arm -m 256"
+LINUX_CONSOLE=
+LINUX_VIDEO="video=vesa vga=788"
+LINUX_OPTS=
+QEMU_OPTS_NO_GFX=
+QEMU_OPTS_USB=
+QEMU_OPTS=
+
+FAKE_USB_STICK=${HOME}/Documents/QEMU/Tests/Data/dummy-usb-stick.img
+
+usage() {
+	cat << EOF
+Usage: $(basename $0) [OPTIONS] <ARCH> <TOPIC>
+
+Options:
+
+  -k COMMAND: set kernel command line
+  -i DIR:     set image path to DIR
+  -n:         do not start graphical interface
+  -u VID:PID  attach USB device specified by its VID and PID
+EOF
+}
+
+start_qemu_x86_misc() {
+	start_qemu_x86 "misc" "Starting Misc Demo on QEMU x86"
+}
+
+start_qemu_x86_runit() {
+	start_qemu_x86 "runit" "Starting Runit Demo on QEMU x86"
+}
+
+start_qemu_x86_gtk3_x11() {
+	start_qemu_x86 "gtk3-x11" "Starting Gtk+ 3.0 (X11) Demo on QEMU x86"
+}
+
+start_qemu_x86_gtk3_wayland() {
+	start_qemu_x86 "gtk3-wayland" "Starting Gtk+ 3.0 (Wayland) Demo on QEMU x86"
+}
+
+start_qemu_x86_systemd() {
+	start_qemu_x86 "ssystemd" "Starting Systemd Demo on QEMU x86"
+}
+
+start_qemu_x86_eudev() {
+	start_qemu_x86 "eudev" "Starting Eudev Demo on QEMU x86"
+}
+
+start_qemu_arm_systemd() {
+	start_qemu_arm "systemd" "Starting Systemd Demo on QEMU ARM"
+}
+
+start_qemu_arm_eudev() {
+	start_qemu_arm "eudev" "Starting Eudev Demo on QEMU ARM"
+}
+
+start_qemu_arm_gtk3_x11() {
+	start_qemu_arm "gtk3-x11" "Starting Gtk+ 3.0 (X11) Demo on QEMU ARM"
+}
+
+start_qemu_arm_gtk3_wayland() {
+	start_qemu_arm "gtk3-wayland" "Starting Gtk+ 3.0 (Wayland) Demo on QEMU ARM"
+}
+
+start_qemu_x86() {
+	echo $2
+	test -n "${QEMU_OPTS_NO_GFX}" && LINUX_CONSOLE="console=ttyS0"
+	${QEMU_SYSTEM_X86} \
+	${QEMU_OPTS} \
+	-soundhw hda\
+	-net nic,model=rtl8139,macaddr=52:54:00:11:22:33 \
+	-net tap,ifname=tap0,script=no,downscript=no \
+	-kernel ${IMAGE_DIR}/elebihan/demo-$1/x86/images/bzImage \
+	-append "${LINUX_CONSOLE} ${LINUX_VIDEO} ${LINUX_OPTS} root=/dev/sda rw" \
+	-hda $HOME/build/elebihan/demo-$1/x86/images/rootfs.ext2 \
+	-device piix3-usb-uhci \
+	-drive id=my_usb_stick,file=${FAKE_USB_STICK},if=none \
+	-usb \
+	-device usb-storage,drive=my_usb_stick
+}
+
+start_qemu_arm() {
+	echo $2
+	test -n "${QEMU_OPTS_NO_GFX}" && LINUX_CONSOLE="console=ttyAMA0"
+	${QEMU_SYSTEM_ARM} -M versatilepb \
+	${QEMU_OPTS} \
+	-net nic,macaddr=52:54:00:11:22:33 \
+	-net tap,ifname=tap0,script=no,downscript=no \
+	-kernel ${IMAGE_DIR}/elebihan/demo-$1/arm/images/zImage \
+	-append "${LINUX_CONSOLE} ${LINUX_OPTS} root=/dev/sda rw" \
+	-drive file=${IMAGE_DIR}/elebihan/demo-$1/arm/images/rootfs.ext2,if=scsi \
+	-drive id=my_usb_stick,file=${FAKE_USB_STICK},if=none \
+	-usb \
+	-device usb-storage,drive=my_usb_stick
+}
+
+while getopts "hvk:i:nu:" option; do
+	case $option in
+		h)
+			usage; exit 0
+			;;
+		k)
+			LINUX_OPTS=${OPTARG}
+			;;
+		i)
+			IMAGE_DIR=${OPTARG}
+			;;
+		n)
+			QEMU_OPTS_NO_GFX="-nographic"
+			;;
+		u)
+			QEMU_OPTS_USB="${QEMU_OPTS_USB} -usbdevice host:${OPTARG}"
+			;;
+		v)
+			echo ${__VERSION__}; exit 0
+			;;
+		*)
+			echo "Unknown option" >&2; exit 2
+			;;
+	esac
+done
+
+shift $((${OPTIND} - 1))
+
+if [ $# -ne 2 ]; then
+	usage
+	exit 2
+fi
+
+if [ -n "${QEMU_OPTS_NO_GFX}" ]; then
+	QEMU_OPTS="${QEMU_OPTS} ${QEMU_OPTS_NO_GFX}"
+else
+	QEMU_OPTS="${QEMU_OPTS} -serial stdio"
+fi
+
+if [ -n "${QEMU_OPTS_USB}" ]; then
+	QEMU_OPTS="${QEMU_OPTS} ${QEMU_OPTS_USB}"
+fi
+
+ARCH=$1
+DEMO=$(echo $2 | tr '-' '_')
+
+COMMAND="start_qemu_${ARCH}_${DEMO}"
+eval ${COMMAND}
