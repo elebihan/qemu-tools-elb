@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# qemu-start-demo - Starts SEMU virtual machines
+# qemu-start-demo - Starts QEMU virtual machines
 #
 # Copyright (c) 2014 Eric Le Bihan <eric.le.bihan.dev@free.fr>
 #
@@ -50,8 +50,12 @@ start_qemu_x86_gtk3_wayland() {
 	start_qemu_x86 "gtk3-wayland" "Starting Gtk+ 3.0 (Wayland) Demo on QEMU x86"
 }
 
+start_qemu_x86_pygtk() {
+	start_qemu_x86 "pygtk" "Starting PyGtk Demo on QEMU x86"
+}
+
 start_qemu_x86_systemd() {
-	start_qemu_x86 "ssystemd" "Starting Systemd Demo on QEMU x86"
+	start_qemu_x86 "systemd" "Starting Systemd Demo on QEMU x86"
 }
 
 start_qemu_x86_eudev() {
@@ -74,12 +78,17 @@ start_qemu_arm_gtk3_wayland() {
 	start_qemu_arm "gtk3-wayland" "Starting Gtk+ 3.0 (Wayland) Demo on QEMU ARM"
 }
 
+start_qemu_arm_pygtk() {
+	start_qemu_arm "pygtk" "Starting PyGtk Demo on QEMU ARM"
+}
+
 start_qemu_x86() {
 	echo $2
 	test -n "${QEMU_OPTS_NO_GFX}" && LINUX_CONSOLE="console=ttyS0"
 	${QEMU_SYSTEM_X86} \
 	${QEMU_OPTS} \
 	-soundhw hda\
+	-vga std \
 	-net nic,model=rtl8139,macaddr=52:54:00:11:22:33 \
 	-net tap,ifname=tap0,script=no,downscript=no \
 	-kernel ${IMAGE_DIR}/elebihan/demo-$1/x86/images/bzImage \
