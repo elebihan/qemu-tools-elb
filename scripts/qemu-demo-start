@@ -66,6 +66,10 @@ start_qemu_x86_eudev() {
 	start_qemu_x86 "eudev" "Starting Eudev Demo on QEMU x86"
 }
 
+start_qemu_x86_grsec() {
+	start_qemu_x86 "grsec" "Starting Grsecurity Demo on QEMU x86"
+}
+
 start_qemu_arm_systemd() {
 	start_qemu_arm "systemd" "Starting Systemd Demo on QEMU ARM"
 }
