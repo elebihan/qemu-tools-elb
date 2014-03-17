@@ -46,6 +46,10 @@ start_qemu_x86_gtk3_x11() {
 	start_qemu_x86 "gtk3-x11" "Starting Gtk+ 3.0 (X11) Demo on QEMU x86"
 }
 
+start_qemu_x86_qt5() {
+	start_qemu_x86 "qt5" "Starting Qt5 Demo on QEMU x86"
+}
+
 start_qemu_x86_gtk3_wayland() {
 	start_qemu_x86 "gtk3-wayland" "Starting Gtk+ 3.0 (Wayland) Demo on QEMU x86"
 }
