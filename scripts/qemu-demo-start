@@ -9,7 +9,7 @@
 
 __VERSION__=0.1.0
 
-IMAGE_DIR="${HOME}/build"
+IMAGE_DIR="${HOME}/build/elebihan"
 QEMU_SYSTEM_X86="qemu-system-i386 --enable-kvm"
 QEMU_SYSTEM_ARM="qemu-system-arm -m 256"
 LINUX_CONSOLE=
@@ -95,9 +95,9 @@ start_qemu_x86() {
 	-vga std \
 	-net nic,model=rtl8139,macaddr=52:54:00:11:22:33 \
 	-net tap,ifname=tap0,script=no,downscript=no \
-	-kernel ${IMAGE_DIR}/elebihan/demo-$1/x86/images/bzImage \
+	-kernel ${IMAGE_DIR}/demo-$1/x86/images/bzImage \
 	-append "${LINUX_CONSOLE} ${LINUX_VIDEO} ${LINUX_OPTS} root=/dev/sda rw" \
-	-hda $HOME/build/elebihan/demo-$1/x86/images/rootfs.ext2 \
+	-hda ${IMAGE_DIR}/demo-$1/x86/images/rootfs.ext2 \
 	-device piix3-usb-uhci \
 	-drive id=my_usb_stick,file=${FAKE_USB_STICK},if=none \
 	-usb \
@@ -111,9 +111,9 @@ start_qemu_arm() {
 	${QEMU_OPTS} \
 	-net nic,macaddr=52:54:00:11:22:33 \
 	-net tap,ifname=tap0,script=no,downscript=no \
-	-kernel ${IMAGE_DIR}/elebihan/demo-$1/arm/images/zImage \
+	-kernel ${IMAGE_DIR}/demo-$1/arm/images/zImage \
 	-append "${LINUX_CONSOLE} ${LINUX_OPTS} root=/dev/sda rw" \
-	-drive file=${IMAGE_DIR}/elebihan/demo-$1/arm/images/rootfs.ext2,if=scsi \
+	-drive file=${IMAGE_DIR}/demo-$1/arm/images/rootfs.ext2,if=scsi \
 	-drive id=my_usb_stick,file=${FAKE_USB_STICK},if=none \
 	-usb \
 	-device usb-storage,drive=my_usb_stick
