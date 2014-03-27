@@ -70,6 +70,10 @@ start_qemu_x86_grsec() {
 	start_qemu_x86 "grsec" "Starting Grsecurity Demo on QEMU x86"
 }
 
+start_qemu_x86_smack() {
+	start_qemu_x86 "smack" "Starting SMACK Demo on QEMU x86"
+}
+
 start_qemu_arm_systemd() {
 	start_qemu_arm "systemd" "Starting Systemd Demo on QEMU ARM"
 }
