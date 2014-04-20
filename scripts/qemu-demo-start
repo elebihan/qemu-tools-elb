@@ -19,10 +19,11 @@
 # The default configuration file is $HOME/.config/qemo-demo-start.conf
 #
 
-__VERSION__=0.2.0
+__VERSION__=0.3.0
 
 CONFIG_FILE=$HOME/.config/qemu-demo-start.conf
 IMAGE_DIR="${HOME}/build"
+DUMMY_USB_DISK="${HOME}/Data/QEMU/Tests/dummy-usb-disk.img"
 QEMU_SYSTEM_X86="qemu-system-i386 --enable-kvm"
 QEMU_SYSTEM_ARM="qemu-system-arm -m 256"
 LINUX_CONSOLE=
@@ -31,8 +32,12 @@ LINUX_OPTS=
 QEMU_OPTS_NO_GFX=
 QEMU_OPTS_USB=
 QEMU_OPTS=
+QEMU_OPTS_USB_DISK=" \
+	-drive id=my_usb_disk,file=${DUMMY_USB_DISK},if=none \
+	-usb \
+	-device usb-storage,drive=my_usb_disk"
 
-FAKE_USB_STICK=${HOME}/Documents/QEMU/Tests/Data/dummy-usb-stick.img
+USE_USB_DISK=YES
 
 usage() {
 	cat << EOF
@@ -45,6 +50,8 @@ Options:
   -i DIR:     set image path to DIR
   -n:         do not start graphical interface
   -u VID:PID  attach USB device specified by its VID and PID
+
+  -D          dot no use dummy USB disk
 EOF
 }
 
@@ -60,10 +67,7 @@ start_qemu_x86() {
 	-kernel ${IMAGE_DIR}/demo-$1/x86/images/bzImage \
 	-append "${LINUX_CONSOLE} ${LINUX_VIDEO} ${LINUX_OPTS} root=/dev/sda rw" \
 	-hda ${IMAGE_DIR}/demo-$1/x86/images/rootfs.ext2 \
-	-device piix3-usb-uhci \
-	-drive id=my_usb_stick,file=${FAKE_USB_STICK},if=none \
-	-usb \
-	-device usb-storage,drive=my_usb_stick
+	-device piix3-usb-uhci
 }
 
 start_qemu_arm() {
@@ -75,13 +79,10 @@ start_qemu_arm() {
 	-net tap,ifname=tap0,script=no,downscript=no \
 	-kernel ${IMAGE_DIR}/demo-$1/arm/images/zImage \
 	-append "${LINUX_CONSOLE} ${LINUX_OPTS} root=/dev/sda rw" \
-	-drive file=${IMAGE_DIR}/demo-$1/arm/images/rootfs.ext2,if=scsi \
-	-drive id=my_usb_stick,file=${FAKE_USB_STICK},if=none \
-	-usb \
-	-device usb-storage,drive=my_usb_stick
+	-drive file=${IMAGE_DIR}/demo-$1/arm/images/rootfs.ext2,if=scsi
 }
 
-while getopts "hvc:k:i:nu:" option; do
+while getopts "hvc:k:i:nu:D" option; do
 	case $option in
 		h)
 			usage; exit 0
@@ -104,6 +105,9 @@ while getopts "hvc:k:i:nu:" option; do
 		v)
 			echo ${__VERSION__}; exit 0
 			;;
+		D)
+			USE_USB_DISK=NO
+			;;
 		*)
 			echo "Unknown option" >&2; exit 2
 			;;
@@ -125,6 +129,10 @@ fi
 
 if [ -n "${QEMU_OPTS_USB}" ]; then
 	QEMU_OPTS="${QEMU_OPTS} ${QEMU_OPTS_USB}"
+fi
+
+if [ "$USE_USB_DISK" = "YES" ]; then
+	QEMU_OPTS="${QEMU_OPTS} ${QEMU_OPTS_USB_DISK}"
 fi
 
 COMMAND=
