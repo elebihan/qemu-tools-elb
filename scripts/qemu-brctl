@@ -9,18 +9,44 @@
 
 set -e
 
-IFACE=eth1
-ADDRESS=192.168.9.10
-BROADCAST=192.168.9.255
+__VERSION__='0.3.0'
+
+IFACE=eth0
 GROUP=admin
 
 usage() {
 	cat <<EOF
 Usage: $(basename $0) [OPTIONS] <up|down>
+
+Options:
+
+  -g GROUP    set group
+  -i IFACE    set interface name
 EOF
 }
 
+check_tools() {
+	for tool in brctl openvpn; do
+		${tool} --version &>/dev/null
+		if [ $? -ne 0 ]; then
+			echo "Please install ${tool}" 1>&2
+			exit 3
+		fi
+	done
+}
+
+get_iface_addr() {
+	echo $(ip addr show dev $1 | awk '$1 == "inet" { print gensub(/(.+)\/(.+)/, "\\1", "g", $2)}')
+}
+
+get_iface_broadcast() {
+	echo $(ip addr show dev $1 | awk '$1 == "inet" { print $4 }')
+}
+
 set_br_up() {
+	local address
+	local broadcast
+
 	modprobe tun
 	openvpn --mktun --dev tap0  --group ${GROUP}
 	ifconfig tap0 0.0.0.0 promisc up
@@ -32,7 +58,10 @@ set_br_up() {
 	brctl addif br0 tap0
 	brctl stp br0 off
 
-	ifconfig br0 ${ADDRESS} netmask 255.255.255.0 broadcast ${BROADCAST}
+	address=$(get_iface_addr)
+	broadcast=$(get_iface_broadcast)
+
+	ifconfig br0 ${address} netmask 255.255.255.0 broadcast ${broadcast}
 }
 
 set_br_down() {
@@ -43,10 +72,34 @@ set_br_down() {
 	ifconfig ${IFACE} up
 }
 
+while getopts "hvg:i:" option; do
+	case $option in
+		h)
+			usage; exit 0
+			;;
+		v)
+			echo ${__VERSION__}; exit 0;
+			;;
+		g)
+			GROUP=${OPTARG}
+			;;
+		i)
+			IFACE=${OPTARG}
+			;;
+		*)
+			echo "Unknown option" >&2; exit 2
+			;;
+	esac
+done
+
+shift $((${OPTIND} - 1))
+
 if [ $# -ne 1 ]; then
 	usage
 	exit 1
 fi
+
+check_tools
 
 case "$1" in
 	up)
