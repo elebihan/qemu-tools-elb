@@ -27,7 +27,7 @@ EOF
 
 check_tools() {
 	for tool in brctl openvpn; do
-		${tool} --version &>/dev/null
+		which ${tool} &>/dev/null
 		if [ $? -ne 0 ]; then
 			echo "Please install ${tool}" 1>&2
 			exit 3
