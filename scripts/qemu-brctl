@@ -58,8 +58,8 @@ set_br_up() {
 	brctl addif br0 tap0
 	brctl stp br0 off
 
-	address=$(get_iface_addr)
-	broadcast=$(get_iface_broadcast)
+	address=$(get_iface_addr ${IFACE})
+	broadcast=$(get_iface_broadcast ${IFACE})
 
 	ifconfig br0 ${address} netmask 255.255.255.0 broadcast ${broadcast}
 }
