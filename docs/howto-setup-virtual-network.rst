@@ -30,7 +30,7 @@ Add the following lines to ``/etc/network/interfaces``::
   auto tap0
   iface tap0 inet static
           address 172.16.1.1
-          network 172.16.1.10
+          network 172.16.1.0
           netmask 255.255.255.0
           vde2-switch -
 
@@ -93,7 +93,7 @@ Enable Virtual Network
 Before enabling the virtual network, add the current user to the "vde2-net"
 group::
 
-  $ sudo useradd $USER vde2-net
+  $ sudo adduser $USER vde2-net
   $ newgrp vde2-net
 
 Now, bring up the tap0 interface, restart dnsmasq and NetworkManager if
