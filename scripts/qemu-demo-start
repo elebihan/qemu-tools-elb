@@ -19,7 +19,7 @@
 # The default configuration file is $HOME/.config/qemo-demo-start.conf
 #
 
-__VERSION__=0.3.0
+__VERSION__=0.4.0
 
 CONFIG_FILE=$HOME/.config/qemu-demo-start.conf
 IMAGE_DIR="${HOME}/build"
@@ -38,6 +38,7 @@ QEMU_OPTS_USB_DISK=" \
 	-device usb-storage,drive=my_usb_disk"
 
 USE_USB_DISK=YES
+VDE_SOCKET="/var/run/vde2/tap0.ctl"
 
 usage() {
 	cat << EOF
@@ -63,7 +64,7 @@ start_qemu_x86() {
 	-soundhw hda\
 	-vga std \
 	-net nic,model=rtl8139,macaddr=52:54:00:11:22:33 \
-	-net tap,ifname=tap0,script=no,downscript=no \
+	-net vde,sock=${VDE_SOCKET} \
 	-kernel ${IMAGE_DIR}/demo-$1/x86/images/bzImage \
 	-append "${LINUX_CONSOLE} ${LINUX_VIDEO} ${LINUX_OPTS} root=/dev/sda rw" \
 	-hda ${IMAGE_DIR}/demo-$1/x86/images/rootfs.ext2 \
@@ -76,7 +77,7 @@ start_qemu_arm() {
 	${QEMU_SYSTEM_ARM} -M versatilepb \
 	${QEMU_OPTS} \
 	-net nic,macaddr=52:54:00:11:22:33 \
-	-net tap,ifname=tap0,script=no,downscript=no \
+	-net vde,sock=${VDE_SOCKET} \
 	-kernel ${IMAGE_DIR}/demo-$1/arm/images/zImage \
 	-append "${LINUX_CONSOLE} ${LINUX_OPTS} root=/dev/sda rw" \
 	-drive file=${IMAGE_DIR}/demo-$1/arm/images/rootfs.ext2,if=scsi
