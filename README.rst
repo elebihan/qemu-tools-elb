@@ -1,10 +1,10 @@
-=======================
-QEMU Tools for elebihan
-=======================
+=============================
+QEMU Tools for Embedded Linux
+=============================
 
 Collection of helper tools related to QEMU:
 
 - qemu-brctl: set up/tear down network bridge for QEMU VM.
-- qemu-target-start: start QEMU VM with predefined Buildroot generated images.
+- qemu-box: start QEMU VM with predefined Buildroot generated images.
 
-This project is released under the MIT/X11 license.
+This project is released under the GPL version 3 license.

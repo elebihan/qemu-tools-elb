@@ -1,21 +1,32 @@
 #!/bin/sh
 #
-# qemu-brctl - control bridge for QEMU
+# This file is part of qemu-tools-elb
 #
 # Copyright (c) 2014 Eric Le Bihan <eric.le.bihan.dev@free.fr>
 #
-# This project is released under the MIT/X11 license.
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
 set -e
 
-__VERSION__='0.3.0'
+__VERSION__='0.1.1'
 
 IFACE=eth0
 GROUP=admin
 
 usage() {
-	cat <<EOF
+    cat <<EOF
 Usage: $(basename $0) [OPTIONS] <up|down>
 
 Options:
@@ -26,87 +37,89 @@ EOF
 }
 
 check_tools() {
-	for tool in brctl openvpn; do
-		which ${tool} &>/dev/null
-		if [ $? -ne 0 ]; then
-			echo "Please install ${tool}" 1>&2
-			exit 3
-		fi
-	done
+    for tool in brctl openvpn; do
+        which ${tool} &>/dev/null
+        if [ $? -ne 0 ]; then
+            echo "Please install ${tool}" 1>&2
+            exit 3
+        fi
+    done
 }
 
 get_iface_addr() {
-	ip addr show dev $1 | awk '$1 == "inet" { print gensub(/(.+)\/(.+)/, "\\1", "g", $2)}'
+    ip addr show dev $1 | awk '$1 == "inet" { print gensub(/(.+)\/(.+)/, "\\1", "g", $2)}'
 }
 
 get_iface_broadcast() {
-	ip addr show dev $1 | awk '$1 == "inet" { print $4 }'
+    ip addr show dev $1 | awk '$1 == "inet" { print $4 }'
 }
 
 set_br_up() {
-	local address=$(get_iface_addr ${IFACE})
-	local broadcast=$(get_iface_broadcast ${IFACE})
+    local address=$(get_iface_addr ${IFACE})
+    local broadcast=$(get_iface_broadcast ${IFACE})
 
-	modprobe tun
-	openvpn --mktun --dev tap0  --group ${GROUP}
-	ifconfig tap0 0.0.0.0 promisc up
-	ifconfig ${IFACE} down
-	ifconfig ${IFACE} 0.0.0.0 promisc up
+    modprobe tun
+    openvpn --mktun --dev tap0  --group ${GROUP}
+    ifconfig tap0 0.0.0.0 promisc up
+    ifconfig ${IFACE} down
+    ifconfig ${IFACE} 0.0.0.0 promisc up
 
-	brctl addbr br0
-	brctl addif br0 ${IFACE}
-	brctl addif br0 tap0
-	brctl stp br0 off
+    brctl addbr br0
+    brctl addif br0 ${IFACE}
+    brctl addif br0 tap0
+    brctl stp br0 off
 
-	ifconfig br0 ${address} netmask 255.255.255.0 broadcast ${broadcast}
+    ifconfig br0 ${address} netmask 255.255.255.0 broadcast ${broadcast}
 }
 
 set_br_down() {
-	ifconfig br0 down
-	brctl delbr br0
-	openvpn --rmtun --dev tap0
-	ifconfig ${IFACE} -promisc
-	ifconfig ${IFACE} up
+    ifconfig br0 down
+    brctl delbr br0
+    openvpn --rmtun --dev tap0
+    ifconfig ${IFACE} -promisc
+    ifconfig ${IFACE} up
 }
 
 while getopts "hvg:i:" option; do
-	case $option in
-		h)
-			usage; exit 0
-			;;
-		v)
-			echo ${__VERSION__}; exit 0;
-			;;
-		g)
-			GROUP=${OPTARG}
-			;;
-		i)
-			IFACE=${OPTARG}
-			;;
-		*)
-			echo "Unknown option" >&2; exit 2
-			;;
-	esac
+    case $option in
+        h)
+            usage; exit 0
+            ;;
+        v)
+            echo ${__VERSION__}; exit 0;
+            ;;
+        g)
+            GROUP=${OPTARG}
+            ;;
+        i)
+            IFACE=${OPTARG}
+            ;;
+        *)
+            echo "Unknown option" >&2; exit 2
+            ;;
+    esac
 done
 
 shift $((${OPTIND} - 1))
 
 if [ $# -ne 1 ]; then
-	usage
-	exit 1
+    usage
+    exit 1
 fi
 
 check_tools
 
 case "$1" in
-	up)
-		set_br_up
-		;;
-	down)
-		set_br_down
-		;;
-	*)
-		echo "Unknown command" 2>&1
-		exit 111
-		;;
+    up)
+        set_br_up
+        ;;
+    down)
+        set_br_down
+        ;;
+    *)
+        echo "Unknown command" 2>&1
+        exit 111
+        ;;
 esac
+
+# vim: set ts=4 sts=4 sw=4 et ai

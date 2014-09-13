@@ -1,0 +1,100 @@
+#compdef qemu-box
+
+local state
+
+_qemu_box_list_all_boxes()
+{
+    _qemu_all_boxes=( $(qemu-box list | { while read a; do echo -E - " $a"; done; }) )
+}
+
+_qemu_box_list_local_boxes()
+{
+    _qemu_local_boxes=( $(qemu-box list --local | { while read a; do echo -E - " $a"; done; }) )
+}
+
+(( $+functions[_qemu_box_list] )) || _qemu_box_list()
+{
+    _arguments -w -S -s \
+        '(-d --details)'{-d,--details}'[show details]' \
+        '(-l --local)'{-l,--local}'[show only local boxes]'
+}
+
+(( $+functions[_qemu_box_new] )) || _qemu_box_new()
+{
+    _arguments -w -S -s \
+        '(-f --from)'{-f,--from}'[use BOX as template]: :->boxes' \
+        '1: :_guard "^-*" box' \
+
+    if [[ "$state" == boxes ]]; then
+        _qemu_box_list_all_boxes
+        compadd -a _qemu_all_boxes
+    fi
+}
+
+(( $+functions[_qemu_box_run] )) || _qemu_box_run()
+{
+    _arguments -w -S -s \
+        '1: :->boxes' && return 0
+
+    if [[ "$state" == boxes ]]; then
+        _qemu_box_list_all_boxes
+        compadd -a _qemu_all_boxes
+    fi
+}
+
+(( $+functions[_qemu_box_edit] )) || _qemu_box_edit()
+{
+    _arguments -w -S -s \
+        '1: :->boxes' && return 0
+
+    if [[ "$state" == boxes ]]; then
+        _qemu_box_list_local_boxes
+        compadd -a _qemu_local_boxes
+    fi
+}
+
+(( $+functions[_qemu_box_delete] )) || _qemu_box_delete()
+{
+    _arguments -w -S -s \
+        '(-f --force)'{-f,--force}'[do not prompt user for confirmation]' \
+        '1: :->boxes' && return 0
+
+    if [[ "$state" == boxes ]]; then
+        _qemu_box_list_local_boxes
+        compadd -a _qemu_local_boxes
+    fi
+}
+
+(( $+functions[_qemu_box_command] )) || _qemu_box_command()
+{
+    local -a _qemu_box_cmds
+    _qemu_box_cmds=(
+        "list:list availables boxes"
+        "new:create a new box"
+        "run:run a box"
+        "edit:edit a box"
+        "delete:delete a box"
+    )
+    if (( CURRENT == 1 )); then
+        _describe -t commands 'qemu-box command' _qemu_box_cmds || compadd "$@"
+    else
+        local curcontext="$curcontext"
+
+        cmd="${${_qemu_box_cmds[(r)$words[1]:*]%%:*}}"
+
+        if (( $#cmd )); then
+            curcontext="${curcontext%:*:*}:qemu-box-${cmd}:"
+
+            _call_function ret _qemu_box_$cmd || _message 'no more arguments'
+        else
+            _message "unknown qemu-box command: $words[1]"
+        fi
+        return ret
+    fi
+}
+
+_arguments -s \
+    '(-v --version)'{-v,--version}'' \
+    '*::qemu-box command:_qemu_box_command'
+
+# vim: ts=4 sts=4 sw=4 et ai

@@ -1,0 +1,114 @@
+# French translations for qemu-tools-elb package.
+# Copyright (C) 2014 Eric Le Bihan
+# This file is distributed under the same license as the qemu-tools-elb package.
+# Eric Le Bihan <eric.le.bihan@free.fr>, 2014.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: qemu-tools-elb\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-09-10 17:04+0200\n"
+"PO-Revision-Date: 2014-08-30 16:01+0200\n"
+"Last-Translator: Eric Le Bihan <eric.le.bihan@free.fr>\n"
+"Language-Team: French\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: scripts/qemu-box:69
+msgid "Do you REALLY want to delete the box '{}' [y/N]? "
+msgstr "Voulez-vous VRAIMENT effacer la box '{}' [o/N]? "
+
+#: scripts/qemu-box:71
+msgid "y"
+msgstr "o"
+
+#: scripts/qemu-box:75
+msgid "Deleted '{}'"
+msgstr "{} effacée"
+
+#: scripts/qemu-box:84
+msgid "list availables boxes"
+msgstr "liste les boxes disponibles"
+
+#: scripts/qemu-box:88
+msgid "show details"
+msgstr "affiche les details"
+
+#: scripts/qemu-box:92
+msgid "show only local boxes"
+msgstr "affiche seulement les boxes locales"
+
+#: scripts/qemu-box:96
+msgid "create a new box"
+msgstr "crée une nouvelle box"
+
+#: scripts/qemu-box:99
+msgid "name of the new box"
+msgstr "nom de la nouvelle box"
+
+#: scripts/qemu-box:103
+msgid "use BOX as template"
+msgstr "utiliser BOX comme modèle"
+
+#: scripts/qemu-box:106
+msgid "run a box"
+msgstr "démarre une box"
+
+#: scripts/qemu-box:109
+msgid "name of the box to run"
+msgstr "nom de la box à démarrer"
+
+#: scripts/qemu-box:112
+msgid "edit a box"
+msgstr "modifie une box"
+
+#: scripts/qemu-box:115
+msgid "name of the box to edit"
+msgstr "nom de la box à éditer"
+
+#: scripts/qemu-box:118
+msgid "delete a box"
+msgstr "efface une box"
+
+#: scripts/qemu-box:121
+msgid "name of the box to delete"
+msgstr "nom de la box à effacer"
+
+#: scripts/qemu-box:124
+msgid "do not prompt user for confirmation"
+msgstr "ne demande pas de confirmation à l'utilisateur"
+
+#: scripts/qemu-box:129
+msgid "Missing command"
+msgstr "Commande absente"
+
+#: scripts/qemu-box:135
+msgid "Error: {}"
+msgstr "Erreur : {}"
+
+#: qemu_tools_elb/box.py:114 qemu_tools_elb/box.py:163
+msgid "box not found"
+msgstr "la box est introuvable"
+
+#: qemu_tools_elb/box.py:119
+msgid "box already exists"
+msgstr "la box existe déjà"
+
+#: qemu_tools_elb/box.py:121
+msgid "template does not exist"
+msgstr "le modèle n'existe pas"
+
+#: qemu_tools_elb/box.py:149
+msgid "box does not exist"
+msgstr "la box n'existe pas"
+
+#: qemu_tools_elb/box.py:263
+msgid "unsupported architecture"
+msgstr "architecture non supportée"
+
+#: qemu_tools_elb/box.py:298
+msgid "unsupported VLAN backend"
+msgstr "pilote de VLAN non supporté"

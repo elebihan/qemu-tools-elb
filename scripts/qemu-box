@@ -1,0 +1,139 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# This file is part of qemu-tools-elb
+#
+# Copyright (C) 2014 Eric Le Bihan <eric.le.bihan.dev@free.fr>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
+import sys
+import argparse
+from qemu_tools_elb import __version__
+from qemu_tools_elb.logging import setup_logging
+from qemu_tools_elb.utils import setup_i18n
+from qemu_tools_elb.box import BoxManager, BoxRunner
+from gettext import gettext as _
+
+setup_logging()
+
+setup_i18n()
+
+def parse_cmd_list(args):
+    manager = BoxManager()
+    if args.local_only:
+        boxes = manager.local_boxes
+    else:
+        boxes = manager.boxes
+    for box in boxes:
+        if args.with_details:
+            text = "{0.name:<24} -- {0.description:<48}"
+        else:
+            text = "{0.name:<24}"
+        print(text.format(box))
+
+def parse_cmd_new(args):
+    manager = BoxManager()
+    if args.template:
+        manager.copy_box(args.template, args.box)
+    else:
+        manager.create_box(args.box)
+    manager.edit_box(args.box)
+
+def parse_cmd_run(args):
+    manager = BoxManager()
+    box = manager.lookup_by_name(args.box)
+    runner = BoxRunner()
+    runner.run(box)
+
+def parse_cmd_edit(args):
+    manager = BoxManager()
+    manager.edit_box(args.box)
+
+def parse_cmd_delete(args):
+    must_delete = False
+    manager = BoxManager()
+    if not args.force:
+        prompt = _("Do you REALLY want to delete the box '{}' [y/N]? ")
+        value = input(prompt.format(args.box))
+        if value.lower() == _('y'):
+            must_delete = True
+    if must_delete:
+        manager.delete_box(args.box)
+        print(_("Deleted '{}'").format(args.box))
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-v', '--version',
+                        action='version',
+                        version=__version__)
+    subparsers = parser.add_subparsers(dest='command')
+    p = subparsers.add_parser('list',
+                              help=_('list availables boxes'))
+    p.add_argument('-d', '--details',
+                   action='store_true',
+                   dest='with_details',
+                   help=_('show details'))
+    p.add_argument('-l', '--local',
+                   action='store_true',
+                   dest='local_only',
+                   help=_('show only local boxes'))
+    p.set_defaults(func=parse_cmd_list)
+
+    p = subparsers.add_parser('new',
+                              help=_('create a new box'))
+    p.set_defaults(func=parse_cmd_new)
+    p.add_argument('box',
+                   help=_('name of the new box'))
+    p.add_argument('-f', '--from',
+                   dest='template',
+                   metavar='BOX',
+                   help=_('use BOX as template'))
+
+    p = subparsers.add_parser('run',
+                              help=_('run a box'))
+    p.set_defaults(func=parse_cmd_run)
+    p.add_argument('box',
+                   help=_('name of the box to run'))
+
+    p = subparsers.add_parser('edit',
+                              help=_('edit a box'))
+    p.set_defaults(func=parse_cmd_edit)
+    p.add_argument('box',
+                   help=_('name of the box to edit'))
+
+    p = subparsers.add_parser('delete',
+                              help=_('delete a box'))
+    p.set_defaults(func=parse_cmd_delete)
+    p.add_argument('box',
+                   help=_('name of the box to delete'))
+    p.add_argument('-f', '--force',
+                   action='store_true',
+                   help=_('do not prompt user for confirmation'))
+
+    args = parser.parse_args()
+
+    if not hasattr(args, 'func'):
+        parser.error(_('Missing command'))
+    else:
+        try:
+            args.func(args)
+            rc = 0
+        except Exception as e:
+            print(_("Error: {}").format(e), file=sys.stderr)
+            rc = 1
+        sys.exit(rc)
+
+# vim: ts=4 sw=4 sts=4 et ai

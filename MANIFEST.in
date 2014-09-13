@@ -1,0 +1,10 @@
+include AUTHORS
+include COPYING
+include HACKING
+include README.rst
+include disthelpers.py
+recursive-include data *.conf
+recursive-include doc *.rst
+recursive-include man *
+recursive-include po *.po
+recursive-include shell-completion/zsh _*
