@@ -35,7 +35,7 @@ setup(name='qemu-tools-elb',
       url='https://github.com/elebihan/qemu-tools-elb',
       platforms=['Linux'],
       keywords=[],
-      install_requires=[],
+      install_requires=['colorama'],
       classifiers=[
           'Development Status :: 3 - Alpha',
           'Programming Language :: Python :: 3',

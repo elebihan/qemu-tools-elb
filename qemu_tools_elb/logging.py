@@ -31,7 +31,9 @@
 __docformat__ = 'restructuredtext en'
 
 import os
+import sys
 import logging
+from colorama import init, Fore
 
 __LOG_LEVELS = {
     'debug': logging.DEBUG,
@@ -49,13 +51,50 @@ except:
 __logger = logging.getLogger('qemu-tools-elb')
 __logger.setLevel(__level)
 
+class ColoredFormatter(logging.Formatter):
+    """Add color to messages.
+
+    :param fmt: format string
+    :type: str
+    """
+    def __init__(self, fmt):
+        logging.Formatter.__init__(self, fmt)
+
+    def format(self, record):
+        colors = {
+            'WARNING': Fore.YELLOW,
+            'INFO': Fore.GREEN,
+            'DEBUG': Fore.BLUE,
+            'CRITICAL': Fore.MAGENTA,
+            'ERROR': Fore.RED,
+        }
+        message = logging.Formatter.format(self, record)
+        return colors[record.levelname] + message + Fore.RESET
+
 def setup_logging():
-    logging.basicConfig(format="%(levelname)s: %(message)s")
+    fmt = "%(levelname)s: %(message)s"
+    handler = logging.StreamHandler()
+    if sys.stdout.isatty():
+        formatter = ColoredFormatter(fmt)
+        init()
+    else:
+        formatter = logging.Formatter(fmt)
+
+    handler.setFormatter(formatter)
+    for h in __logger.handlers:
+        __logger.removeHandler(h)
+    __logger.addHandler(handler)
 
 def info(message):
     __logger.info(message)
 
 def debug(message):
     __logger.debug(message)
+
+def error(message):
+    __logger.error(message)
+
+def warning(message):
+    __logger.warning(message)
 
 # vim: ts=4 sw=4 sts=4 et ai
